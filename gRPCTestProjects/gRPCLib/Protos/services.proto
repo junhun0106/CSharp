@@ -1,0 +1,16 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "gRPCLib.Proto";
+
+package gRPCLib.Proto;
+
+service gRPCService {
+	rpc RpcPingRequest (PingRequest) returns (PingRequest.Response);
+}
+
+message PingRequest {
+
+	message Response {
+
+	}
+}
