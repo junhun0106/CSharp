@@ -32,6 +32,11 @@ namespace Interfaces
         }
     }
 
+    [PacketServer("Enter")]
+    public class PACKET_CS_ENTER : PacketServerBase
+    {
+        public string FamilyName;
+    }
 
     [PacketServer("Chat")]
     public class PACKET_CS_CHAT : PacketServerBase
