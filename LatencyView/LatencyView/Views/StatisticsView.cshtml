@@ -1,0 +1,30 @@
+﻿@model LatencyView.StatsModel
+
+<h1>WebApi</h1>
+<h4>Request detail</h4>
+
+<table border="1">
+    <tr>
+        <th width="400">URL</th>
+        <th width="80">Method</th>
+        <th width="100">Count</th>
+        <th width="100">Failed</th>
+        <th width="120">Min Time</th>
+        <th width="120">Max Time</th>
+        <th width="120">Avg Time</th>
+        <th width="120">TrimmedMean</th>
+    </tr>
+
+    @foreach (var m in Model.WebApiInfos) {
+<tr>
+    <td align="center">@m.url</td>
+    <td align="center">@m.method</td>
+    <td align="center">@m.count</td>
+    <td align="center">@m.failedCount</td>
+    <td align="center">@m.timeMin.TotalSeconds</td>
+    <td align="center">@m.timeMax.TotalSeconds</td>
+    <td align="center">@m.timeAvg.TotalSeconds</td>
+    <td align="center">@m.TrimmedMean.TotalSeconds</td>
+</tr>
+    }
+</table>
