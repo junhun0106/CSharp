@@ -19,12 +19,12 @@ namespace WebApplication2
         public Startup(IConfiguration configuration)
         {
             var config = new Config();
-            // appsetting¿¡ ÀÖ´Â °ªÀ» ¾ò¾î ¿Â´Ù
+            // appsettingì— ìžˆëŠ” ê°’ì„ ì–»ì–´ ì˜¨ë‹¤
             configuration.Bind("Config", config);
             // config.Flag == false
 
-            // Æ¯Á¤ ÀÚ¸®¸¶´Ù º¯°æÇØÁÖ¾î¾ß ÇÏ´Â °ªÀÌ ÀÖ´Ù¸é, ¾Æ·¡¿Í °°Àº ¹æ¹ýÀ¸·Î ÇØº¸ÀÚ
-            // ex - È¯°æ º¯¼ö µî
+            // íŠ¹ì • ìžë¦¬ë§ˆë‹¤ ë³€ê²½í•´ì£¼ì–´ì•¼ í•˜ëŠ” ê°’ì´ ìžˆë‹¤ë©´, ì•„ëž˜ì™€ ê°™ì€ ë°©ë²•ìœ¼ë¡œ í•´ë³´ìž
+            // ex - í™˜ê²½ ë³€ìˆ˜ ë“±
             const string localSetting = "develop0";
             configuration.Bind($"DeveloperOverrides:{localSetting}", config);
             // config.Flag == true
@@ -32,46 +32,44 @@ namespace WebApplication2
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // ±»ÀÌ Æ÷ÇÔ½ÃÅ°Áö ¾Ê¾Æµµ µÇÁö¸¸, ViewPage ±¸¼ºÀº ÄÁÆ®·Ñ·¯·Î ÇÏ´Â °ÍÀÌ ·¹ÆÛ·±½ºµµ ¸¹°í
-            // ±¸±Û¸µÇÏ±âµµ ÆíÇÏ´Ù
+            // êµ³ì´ í¬í•¨ì‹œí‚¤ì§€ ì•Šì•„ë„ ë˜ì§€ë§Œ, ViewPage êµ¬ì„±ì€ ì»¨íŠ¸ë¡¤ëŸ¬ë¡œ í•˜ëŠ” ê²ƒì´ ë ˆí¼ëŸ°ìŠ¤ë„ ë§Žê³ 
+            // êµ¬ê¸€ë§í•˜ê¸°ë„ íŽ¸í•˜ë‹¤
             services.AddControllersWithViews();
 
-            // .NET FRAMEWORK³ª Nancy ¶óÀÌºê·¯¸®¿¡¼­ ³Ñ¾î ¿Ô°Å³ª È¤Àº url °ü¸®¸¦ À§ÇØ ±¸Á¶Ã¼¸¦ ¼­·Î °øÀ¯ÇÏ´Â ÇüÅÂ·Î ¸¸µé¾ú´Ù¸é Ä«ÅÍ ¸ðµâÀ» ÀÌ¿ëÇÏ´Â °Íµµ ¹æ¹ýÀÌ´Ù
-            // DefaultJsonModelBinder »ç¿ë ½Ã¿¡ Body ReadAsyncÀ» ÇÏÁö ¸øÇÏµµ·Ï ÇÏ±â ¶§¹®¿¡ ÁÖÀÇ ÇØ¾ß ÇÑ´Ù!
-            // ModelBinderHelper.cs Âü°í
-            // services.AddCarter(c =>{
+            // https://github.com/junhun0106/CSharp/tree/main/CarterModule
+            // services.AddCarter(configurator: c =>{
             //  c.WithModelBinder<DefaultJsonModelBinder>();
             //  c.WithResponseNegotiator<NewtonsoftJsonResponseNegotiator>();
             // });
 
-            // Grpc »ç¿ë
-            // Å×½ºÆ® ÇÁ·ÎÁ§Æ®¿¡¼­´Â »ç¿ëÇÏÁö ¾Ê´Â´Ù
+            // Grpc ì‚¬ìš©
+            // í…ŒìŠ¤íŠ¸ í”„ë¡œì íŠ¸ì—ì„œëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤
             //services.AddGrpc(options => {
             //    options.IgnoreUnknownServices = true;
-                  // gRPC¿¡¼­ »ç¿ë ½Ã ¿¡·¯ ÇÚµé¸µÀ» ÇÏ±â À§ÇÔ
+            // gRPCì—ì„œ ì‚¬ìš© ì‹œ ì—ëŸ¬ í•¸ë“¤ë§ì„ í•˜ê¸° ìœ„í•¨
             //    options.Interceptors.Add<GrpcErrorHandleInterceptor>();
             //});
 #if DEBUG
             services.AddTransient<ITestRepository, TestRepository_2>();
             services.AddTransient<ITestProvider, TestProvider>();
-            // ÀÎÅÍÆäÀÌ½º ºÒÇÊ¿äÇÒ °æ¿ì ¾Æ·¡¿Í °°ÀÌ »ç¿ëÇØµµ µÈ´Ù
-            // Transient·Î ÇÏ´Â °ÍÀÌ ±ÇÀå »çÇ×
+            // ì¸í„°íŽ˜ì´ìŠ¤ ë¶ˆí•„ìš”í•  ê²½ìš° ì•„ëž˜ì™€ ê°™ì´ ì‚¬ìš©í•´ë„ ëœë‹¤
+            // Transientë¡œ í•˜ëŠ” ê²ƒì´ ê¶Œìž¥ ì‚¬í•­
             // services.AddTransient(typeof(TestRepository));
 
-            // Scope¿¡ °æ¿ì ¿äÃ» 1¹ø°ú ¶óÀÌÇÁ »çÀÌÅ¬ÀÌ °°´Ù
-            // ÀÚÁÖ È£ÃâµÇ´Â °æ¿ì¿¡´Â ½ºÄÚÇÁ¸¦ ÀÌ¿ëÇÏ¿© ¼º´É Çâ»óÀ» ±â´ëÇØ º¼ ¼ö ÀÖ´Ù
-            // ¿¹) °æ¿ì¿¡ µû¶ó À¥ ¿äÃ» ¿©·¯ °³¸¦ ¹¶ÃÄ¼­ 1¹øÀÇ ¿äÃ»À¸·Î º¸³»´Â °æ¿ì°¡ ÀÖ´Ù
-            // ÀÌ¶§ ¾î¶² ¿äÃ»µéÀÌ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö ¾Ë ¼ö ¾øÀ¸¹Ç·Î °¢°¢ÀÇ ·¹Æ÷ÁöÅä¸®¸¦ È£ÃâÇÏ°Ô µÇ´Âµ¥
-            // ÀÌ¶§ Ä³½ÃÇØ³õÀ» ¼ö ÀÖ´Â °ÍµéÀº ½ºÄÚÇÁ ³»¿¡ Ä³½ÃÇÏ¿© Àç»ç¿ëÀÌ °¡´É ÇÏ´Ù
+            // Scopeì— ê²½ìš° ìš”ì²­ 1ë²ˆê³¼ ë¼ì´í”„ ì‚¬ì´í´ì´ ê°™ë‹¤
+            // ìžì£¼ í˜¸ì¶œë˜ëŠ” ê²½ìš°ì—ëŠ” ìŠ¤ì½”í”„ë¥¼ ì´ìš©í•˜ì—¬ ì„±ëŠ¥ í–¥ìƒì„ ê¸°ëŒ€í•´ ë³¼ ìˆ˜ ìžˆë‹¤
+            // ì˜ˆ) ê²½ìš°ì— ë”°ë¼ ì›¹ ìš”ì²­ ì—¬ëŸ¬ ê°œë¥¼ ë­‰ì³ì„œ 1ë²ˆì˜ ìš”ì²­ìœ¼ë¡œ ë³´ë‚´ëŠ” ê²½ìš°ê°€ ìžˆë‹¤
+            // ì´ë•Œ ì–´ë–¤ ìš”ì²­ë“¤ì´ í¬í•¨ë˜ì–´ ìžˆëŠ”ì§€ ì•Œ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ê°ê°ì˜ ë ˆí¬ì§€í† ë¦¬ë¥¼ í˜¸ì¶œí•˜ê²Œ ë˜ëŠ”ë°
+            // ì´ë•Œ ìºì‹œí•´ë†“ì„ ìˆ˜ ìžˆëŠ” ê²ƒë“¤ì€ ìŠ¤ì½”í”„ ë‚´ì— ìºì‹œí•˜ì—¬ ìž¬ì‚¬ìš©ì´ ê°€ëŠ¥ í•˜ë‹¤
             // services.AddScoped<ITestRepository, TestRepository_2>();
 
-            // Config³ª °ÔÀÓ ¸ÞÅ¸µ¥ÀÌÅÍ °°Àº °æ¿ì¿¡´Â ½Ì±ÛÅæÀ¸·Î È°¿ëÇØµµ ÁÁ´Ù
+            // Configë‚˜ ê²Œìž„ ë©”íƒ€ë°ì´í„° ê°™ì€ ê²½ìš°ì—ëŠ” ì‹±ê¸€í†¤ìœ¼ë¡œ í™œìš©í•´ë„ ì¢‹ë‹¤
             // services.AddSingleton<ITestRepository, TestRepository_2>();
 #else
             services.AddTransient<ITestRepository, TestRepository>();
 #endif
 
-            // Auth °ËÁõÀº ¾Æ·¡¿Í °°Àº ¹æ½ÄÀ¸·Îµµ °¡´ÉÇÏ´Ù
+            // Auth ê²€ì¦ì€ ì•„ëž˜ì™€ ê°™ì€ ë°©ì‹ìœ¼ë¡œë„ ê°€ëŠ¥í•˜ë‹¤
             services.AddAuthentication(TokenAuthenticationOptions.Scheme).AddScheme<TokenAuthenticationOptions, TokenAuthenticationHandler>(TokenAuthenticationOptions.Scheme, _ => { });
             
             services.AddTransient<TestActionFilter>();
@@ -87,8 +85,8 @@ namespace WebApplication2
             //    app.UseDeveloperExceptionPage();
             //}
 
-            // ·¹ÀÌÅÏ½Ã, exception handling ÈÄÃ³¸® µî¿¡ È°¿ë ÇÒ ¼ö ÀÖ´Ù
-            // ¹Ìµé¿þ¾î »ç¿ë ½Ã¿¡ ¼ø¼­¿¡ ÁÖÀÇÇÏÀÚ
+            // ë ˆì´í„´ì‹œ, exception handling í›„ì²˜ë¦¬ ë“±ì— í™œìš© í•  ìˆ˜ ìžˆë‹¤
+            // ë¯¸ë“¤ì›¨ì–´ ì‚¬ìš© ì‹œì— ìˆœì„œì— ì£¼ì˜í•˜ìž
             app.UseMiddleware<TestMiddleware>();
 
             app.UseRouting();
@@ -106,9 +104,9 @@ namespace WebApplication2
 
         private void WarmupServices(IServiceProvider container, IServiceCollection services)
         {
-            // À¥ ¼­¹ö´Â First CallÀÌ ±²ÀåÈ÷ ´À¸®°Ô µ¿ÀÛÇÏ´Âµ¥
-            // °¡Àå º£½ºÆ®´Â ¸ðµç Url¿¡ ÇÑ¹ø¾¿ ¹Ì¸® È£ÃâÇÏ´Â°ÅÁö¸¸
-            // ServiceCollection¿¡ ¼­ºñ½ºµéÀ» ÇÑ ¹ø¾¿ È£ÃâÇÏ´Â °Í¸¸À¸·Îµµ first call¿¡ ºÎ´ãÀÌ È® ÁÙ¾îµç´Ù
+            // ì›¹ ì„œë²„ëŠ” First Callì´ êµ‰ìž¥ížˆ ëŠë¦¬ê²Œ ë™ìž‘í•˜ëŠ”ë°
+            // ê°€ìž¥ ë² ìŠ¤íŠ¸ëŠ” ëª¨ë“  Urlì— í•œë²ˆì”© ë¯¸ë¦¬ í˜¸ì¶œí•˜ëŠ”ê±°ì§€ë§Œ
+            // ServiceCollectionì— ì„œë¹„ìŠ¤ë“¤ì„ í•œ ë²ˆì”© í˜¸ì¶œí•˜ëŠ” ê²ƒë§Œìœ¼ë¡œë„ first callì— ë¶€ë‹´ì´ í™• ì¤„ì–´ë“ ë‹¤
             Task.Run(() => {
                 var sw = Stopwatch.StartNew();
                 using var scope = container.CreateScope();
