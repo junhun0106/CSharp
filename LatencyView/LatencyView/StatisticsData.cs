@@ -1,4 +1,7 @@
-﻿using System;
+﻿using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 
@@ -36,6 +39,26 @@ namespace LatencyView
     public class StatsModel
     {
         public WebApiInfo[] WebApiInfos;
+    }
+
+    public static class LatencyLogger
+    {
+        static Serilog.ILogger _latencyLogger;
+
+        public static bool IsInitialized => _latencyLogger != null;
+
+        public static void Init(LoggerConfiguration lc)
+        {
+            _latencyLogger = lc.CreateLogger();
+        }
+
+        public static void Log(DateTime request_time, DateTime response_time, bool is_success, string apiName)
+        {
+            var latency_us = (int)((response_time - request_time).TotalMilliseconds * 1000);
+            var reqTime = request_time.ToString("yyyy-MM-ddTHH\\:mm\\:ss.fff");
+            var resTime = response_time.ToString("yyyy-MM-ddTHH\\:mm\\:ss.fff");
+            _latencyLogger.Information($"{reqTime},{resTime},{apiName},{is_success},{latency_us}");
+        }
     }
 
     public class StatisticsData

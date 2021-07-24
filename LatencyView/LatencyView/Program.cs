@@ -2,6 +2,8 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
+using Serilog;
+
 namespace LatencyView
 {
     public class Program
@@ -13,6 +15,7 @@ namespace LatencyView
 
         public static IWebHostBuilder CreateHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+            .UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration))
             .UseStartup<Startup>();
     }
 }

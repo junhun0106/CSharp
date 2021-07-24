@@ -18,6 +18,7 @@ namespace LatencyView
 
         public async Task Invoke(HttpContext context)
         {
+            var now = System.DateTime.UtcNow;
             var sw = Stopwatch.StartNew();
 
             await next(context).ConfigureAwait(false);
@@ -31,6 +32,8 @@ namespace LatencyView
             bool isStatusOk = context.Response.StatusCode == (int)HttpStatusCode.OK;
 
             data.Add(url, method, isStatusOk, elapsed);
+            
+            LatencyLogger.Log(now, System.DateTime.UtcNow, isStatusOk, $"[{context.Request.Method}]{context.Request.Path}");
         }
     }
 }
