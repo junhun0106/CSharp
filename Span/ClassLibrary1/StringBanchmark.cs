@@ -1,6 +1,5 @@
 ﻿using System;
 using BenchmarkDotNet.Attributes;
-using Util;
 
 namespace ClassLibrary1
 {
@@ -34,13 +33,30 @@ namespace ClassLibrary1
     [MemoryDiagnoser]
     public class ToStringArrayBenchmark
     {
-        private string toStringArray_property => "{v1_longclassname, v2_longclassname; v3_longclassname}";
+        private string toStringArray_property => "{v1_longclassname, v2_longclassname; v3_longclassname; v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname;v3_longclassname}";
 
         [Benchmark]
         public void ToStringArray_String()
         {
             var strings = toStringArray_property.ToStringArraySafe();
-            if (strings.Length != 3) throw new Exception();
+            if (strings[0] != "v1_longclassname") throw new Exception();
+            if (strings[1] != "v2_longclassname") throw new Exception();
+            if (strings[2] != "v3_longclassname") throw new Exception();
+        }
+
+        [Benchmark]
+        public void ToStringArray_SpanSplitEnumerator()
+        {
+            var strings = toStringArray_property.AsSpan().ToStringArraySafe();
+            if (strings[0] != "v1_longclassname") throw new Exception();
+            if (strings[1] != "v2_longclassname") throw new Exception();
+            if (strings[2] != "v3_longclassname") throw new Exception();
+        }
+
+        [Benchmark]
+        public void ToStringArray_SpanSplitEnumerator2()
+        {
+            var strings = toStringArray_property.AsSpan().ToStringArraySafe_2();
             if (strings[0] != "v1_longclassname") throw new Exception();
             if (strings[1] != "v2_longclassname") throw new Exception();
             if (strings[2] != "v3_longclassname") throw new Exception();
@@ -49,28 +65,7 @@ namespace ClassLibrary1
         [Benchmark]
         public void ToStringArray_Span()
         {
-            var strings = toStringArray_property.AsSpan().ToStringArraySafe();
-            if (strings.Length != 3) throw new Exception();
-            if (strings[0] != "v1_longclassname") throw new Exception();
-            if (strings[1] != "v2_longclassname") throw new Exception();
-            if (strings[2] != "v3_longclassname") throw new Exception();
-        }
-
-        [Benchmark]
-        public void ToStringArray_Span2()
-        {
-            var strings = toStringArray_property.AsSpan().ToStringArraySafe_2();
-            if (strings.Length != 3) throw new Exception();
-            if (strings[0] != "v1_longclassname") throw new Exception();
-            if (strings[1] != "v2_longclassname") throw new Exception();
-            if (strings[2] != "v3_longclassname") throw new Exception();
-        }
-
-        [Benchmark]
-        public void ToStringArray_Span3()
-        {
-            var strings = toStringArray_property.AsSpan().ToStringArraySafe_3();
-            if (strings.Length != 3) throw new Exception();
+            var strings = toStringArray_property.AsSpan().ToStringArraySafe_Custom();
             if (strings[0] != "v1_longclassname") throw new Exception();
             if (strings[1] != "v2_longclassname") throw new Exception();
             if (strings[2] != "v3_longclassname") throw new Exception();

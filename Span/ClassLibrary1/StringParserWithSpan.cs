@@ -97,27 +97,11 @@ namespace ClassLibrary1
             }
 
             var result = new List<string>();
-            foreach (var entry in property.Trim(trimChars).Split(separators, StringSplitOptions.RemoveEmptyEntries)) {
+            foreach (var entry in property.Trim(trimChars).Split(separators)) {
                 result.Add(entry.Trim().ToString());
             }
 
             return result.ToArray();
-        }
-
-        public static string[] ToStringArraySafe_3(this ReadOnlySpan<char> property)
-        {
-            if (property.IsEmpty) {
-                return Array.Empty<string>();
-            }
-
-            var split = property.Trim(trimChars).Split(separators, StringSplitOptions.RemoveEmptyEntries);
-            var result = new string[split.Current.Length];
-            int index = 0;
-            foreach (var item in split) {
-                result[index] = item.Trim().ToString();
-                index++;
-            }
-            return result;
         }
     }
 }
