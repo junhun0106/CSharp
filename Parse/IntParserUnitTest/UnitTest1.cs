@@ -1,34 +1,21 @@
 using Xunit;
 using IntParserLib;
 using System;
+using System.Globalization;
 
 namespace TestProject1
 {
     public class UnitTest1
     {
         [Fact]
-        public void Test_CustomParse_Normal()
+        public void Test_ParseAllotThousands()
         {
-            var s = "10";
-            var i = IntParser.Parse(s);
-            Assert.True(i == 10);
+            var s = "1,000";
+            int.TryParse(s, NumberStyles.AllowThousands, provider: null, out var i);
+            // 
+            Assert.True(i == 1000);
         }
 
-        [Fact]
-        public void Test_Fail()
-        {
-            var s = "10t";
-            var i = IntParser.Parse(s);
-            Assert.False(i == 10);
-        }
-
-        [Fact]
-        public void Test_CustomParse_WhiteSpace()
-        {
-            var s = " 10 ";
-            var i = IntParser.Parse(s);
-            Assert.True(i == 10);
-        }
 
         [Fact]
         public void Test_CustomParse_MidleWhiteSpace()
@@ -68,6 +55,22 @@ namespace TestProject1
             var s = "10.0".AsSpan();
             var i = IntParser.Parse(s);
             Assert.True(i == 10);
+        }
+
+        [Fact]
+        public void Test_CustomParse_PositveSpan()
+        {
+            var s = "+10".AsSpan();
+            var i = IntParser.Parse(s);
+            Assert.True(i == 10);
+        }
+
+        [Fact]
+        public void Test_CustomParse_NegativeSpan()
+        {
+            var s = "-10".AsSpan();
+            var i = IntParser.Parse(s);
+            Assert.True(i == -10);
         }
     }
 }

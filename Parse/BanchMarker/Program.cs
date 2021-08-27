@@ -95,6 +95,34 @@ namespace IntParse
         }
     }
 
+    [MemoryDiagnoser]
+    public class IntParseSpanBenchMark
+    {
+        private string testString = int.MaxValue.ToString();
+
+        [Benchmark]
+        public void IntParse()
+        {
+            // 파라미터로 span 객체가 넘어 왔다고 가정 한다
+            var span = testString.AsSpan();
+
+            for (int i = 0; i < 10; ++i) {
+                int.Parse(span.ToString());
+            }
+        }
+
+        [Benchmark]
+        public void IntSpanParse()
+        {
+            // 파라미터로 span 객체가 넘어 왔다고 가정 한다
+            var span = testString.AsSpan();
+
+            for (int i = 0; i < 10; ++i) {
+                IntParser.Parse(in span);
+            }
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
