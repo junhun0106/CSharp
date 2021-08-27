@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BoolParseLib\BoolParserLib.csproj" />
+    <ProjectReference Include="..\DoubleParserLib\DoubleParserLib.csproj" />
     <ProjectReference Include="..\IntParserLib\IntParserLib.csproj" />
   </ItemGroup>
 

@@ -13,7 +13,7 @@ namespace DoubleParserLib
             }
 
             bool isNegative = false;
-            double result = 0;
+            int result = 0;
 
             var copy = value.Trim();
             var nagativeIndex = copy.IndexOfAny(nagative);
@@ -21,21 +21,33 @@ namespace DoubleParserLib
                 isNegative = true;
             }
 
+            bool dot = false;
+            int count = 0;
             for (int i = 0; i < copy.Length; ++i) {
+                if (dot) {
+                    count++;
+                }
+
                 var c = copy[i];
                 if (((uint)c - '0') <= 9) {
                     result = (result * 10) + (c - '0');
                 } else if (c == '+' || c == '-') {
                     continue; // 기호 무시
                 } else if (c == '.') {
+                    dot = true;
                     continue; // 소숫점 무시
                 } else {
                     return default;
                 }
             }
 
+            result = isNegative ? -result : result;
 
-            return isNegative ? -result : result;
+            if (count == 0) {
+                return result;
+            }
+
+            return result / Math.Pow(10, count);
         }
     }
 }

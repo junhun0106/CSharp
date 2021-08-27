@@ -3,6 +3,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using IntParserLib;
 using BoolParseLib;
+using DoubleParserLib;
 
 namespace IntParse
 {
@@ -88,6 +89,11 @@ namespace IntParse
     {
         static void Main(string[] args)
         {
+            var s = "11.11";
+            var r = DoubleParser.Parse(s);
+
+            Console.WriteLine(r);
+
             BenchmarkSwitcher.FromAssembly(typeof(BoolParseBenchMark).Assembly).Run(args);
         }
     }
