@@ -34,10 +34,13 @@ namespace IntParserLib
             for (int i = 0; i < value.Length; ++i) {
                 var c = value[i];
                 if (c == ' ') continue;
-                if (c == '.') break;
                 if (c >= '0' && c <= '9') {
                     result = (result * 10) + (c - '0');
                 } else {
+                    if (c == '.') {
+                        break;
+                    }
+
                     fail = true;
                     break;
                 }
