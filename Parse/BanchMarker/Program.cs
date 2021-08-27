@@ -2,57 +2,10 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using IntParserLib;
+using BoolParseLib;
 
 namespace IntParse
 {
-    [MemoryDiagnoser]
-    public class IntParseBenchMark
-    {
-        private static readonly string testString = int.MaxValue.ToString();
-
-        [Benchmark]
-        public void IntParse()
-        {
-            for (int i = 0; i < 10; ++i) {
-                int.Parse(testString);
-            }
-        }
-
-        //[Benchmark]
-        //public void IntTryParse()
-        //{
-        //    for (int i = 0; i < 10; ++i) {
-        //        int.TryParse(testString, out var _);
-        //    }
-        //}
-
-        //[Benchmark]
-        //public void IntParse_Span()
-        //{
-        //    for (int i = 0; i < 10; ++i) {
-        //        var span = testString.AsSpan();
-        //        int.Parse(span);
-        //    }
-        //}
-
-        //[Benchmark]
-        //public void IntTryParse_Span()
-        //{
-        //    for (int i = 0; i < 10; ++i) {
-        //        var span = testString.AsSpan();
-        //        int.TryParse(span, out var _);
-        //    }
-        //}
-
-        [Benchmark]
-        public void IntPrase_ASCII()
-        {
-            for (int j = 0; j < 10; ++j) {
-                IntParser.Parse(in testString);
-            }
-        }
-    }
-
     [MemoryDiagnoser]
     public class BoolParseBenchMark
     {
@@ -61,42 +14,39 @@ namespace IntParse
         [Benchmark]
         public void BoolParse()
         {
+            // 파라미터로 span 객체가 넘어 왔다고 가정 한다
+            var span = testString.AsSpan();
+
             for (int i = 0; i < 10; ++i) {
-                bool.Parse(testString);
+                bool.Parse(span.ToString());
             }
         }
 
         [Benchmark]
-        public void BoolParse_Internal()
+        public void BoolParseSpan()
         {
-            // note : 내부 코드에서 필요한 부분만 가져와서 처리
-            // https://referencesource.microsoft.com/#mscorlib/system/boolean.cs,8b58385ae061c937
+            // 파라미터로 span 객체가 넘어 왔다고 가정 한다
+            var span = testString.AsSpan();
+
             for (int i = 0; i < 10; ++i) {
-                var result = false;
-                // "True"가 아니면 모두 false로 처리 한다
-                var s = testString.Trim();
-                if ("True".Equals(s, StringComparison.OrdinalIgnoreCase)) {
-                    result = true;
-                }
+                BoolParser.Parse(span);
             }
         }
 
         [Benchmark]
-        public void BoolParse_Custom()
+        public void BoolParseSpanInternal()
         {
+            // 파라미터로 span 객체가 넘어 왔다고 가정 한다
+            var span = testString.AsSpan();
+
             for (int i = 0; i < 10; ++i) {
-                bool b = false;
-                if (testString.Length > 0) {
-                    var s = testString.Trim();
-                    var s0 = s[0];
-                    b = s0 == 't' || s0 == 'T'; // string[0] 값이 t 또는 T가 아니면 false
-                }
+                bool.Parse(span);
             }
         }
     }
 
     [MemoryDiagnoser]
-    public class IntParseSpanBenchMark
+    public class IntParseBenchMark
     {
         private string testString = int.MaxValue.ToString();
 
@@ -119,6 +69,17 @@ namespace IntParse
 
             for (int i = 0; i < 10; ++i) {
                 IntParser.Parse(in span);
+            }
+        }
+
+        [Benchmark]
+        public void IntSpanParseInternal()
+        {
+            // 파라미터로 span 객체가 넘어 왔다고 가정 한다
+            var span = testString.AsSpan();
+
+            for (int i = 0; i < 10; ++i) {
+                int.Parse(span);
             }
         }
     }
