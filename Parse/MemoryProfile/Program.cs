@@ -16,16 +16,6 @@ namespace MemoryProfile
             }
         }
 
-        public void Test_2(in string s)
-        {
-            for(int i =0; i < 100000; ++i)
-                IntParser.Parse(in s);
-
-
-            for (int i = 0; i < 1000; ++i) {
-                var _ = i.ToString();
-            }
-        }
 
         public void Test_3(in ReadOnlySpan<char> span)
         {
@@ -48,7 +38,6 @@ namespace MemoryProfile
             for (int i = 1; i <= testCount; ++i) {
                 Tester tester = new Tester();
                 tester.Test_1(in s);
-                tester.Test_2(in s);
                 tester.Test_3(in span);
                 if (i % 100 == 0) {
                     Console.WriteLine($"{i} test...");
