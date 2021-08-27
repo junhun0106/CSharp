@@ -8,79 +8,12 @@ namespace ClassLibrary1
     {
         private static readonly char[] separators = { ',', ';' };
 
-        public static int ToInt(this string value)
-        {
-            return int.Parse(value);
-        }
-
         public static int ToIntOrDefault(this string value, int @default = 0)
         {
             if (int.TryParse(value, out int v)) {
                 return v;
             }
             return @default;
-        }
-
-        public static float ToFloat(this string value)
-        {
-            return float.Parse(value);
-        }
-
-        public static bool ToBool(this string value)
-        {
-            return bool.Parse(value);
-        }
-
-        public static bool ToBoolOrDefault(this string value)
-        {
-            if (bool.TryParse(value, out var v)) {
-                return v;
-            }
-            return false;
-        }
-
-        public static bool[] ToBoolArraySafe(this string value)
-        {
-            if (string.IsNullOrEmpty(value)) {
-                return Array.Empty<bool>();
-            }
-
-            var vArr = value.ToStringArraySafe();
-
-            if (vArr.Length == 0) {
-                return Array.Empty<bool>();
-            }
-
-            var result = new bool[vArr.Length];
-            for (int i = 0; i < vArr.Length; i++) {
-                result[i] = vArr[i].ToTryBool(defaultValue: false);
-            }
-            return result;
-        }
-
-        /// <summary> true or false 무조건 반환 </summary>
-        public static bool ToTryBool(this string value, bool defaultValue = false)
-        {
-            if (bool.TryParse(value, out bool result)) {
-                return result;
-            } else {
-                return defaultValue;
-            }
-        }
-
-        public static int ToColorRGB(this string property)
-        {
-            if (string.IsNullOrEmpty(property))
-                throw new ArgumentException("'property' was null or empty");
-
-            var tokens = property.Split(separators);
-            if (tokens.Length < 3)
-                throw new FormatException("element count was not enough.");
-
-            byte r = Convert.ToByte(tokens[0]);
-            byte g = Convert.ToByte(tokens[1]);
-            byte b = Convert.ToByte(tokens[2]);
-            return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
         }
 
         /// <summary>
@@ -103,7 +36,6 @@ namespace ClassLibrary1
         {
             return DateTime.Parse(str);
         }
-
 
         #region 복수 항목
         /// <summary> 특정한 룰을 따라 스트링 어레이로 전환합니다. 예외를 던지지 않습니다. </summary>
