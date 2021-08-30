@@ -102,6 +102,22 @@ namespace IntParse
         }
 
         [Benchmark]
+        public void DoubleDirectParse()
+        {
+            for (int i = 0; i < 10; ++i) {
+                double.Parse(testString);
+            }
+        }
+
+        [Benchmark]
+        public void DoubleDirectSpanParse()
+        {
+            for (int i = 0; i < 10; ++i) {
+                DoubleParser.Parse(testString.AsSpan());
+            }
+        }
+
+        [Benchmark]
         public void DoubleSpanParseInternal()
         {
             // 파라미터로 span 객체가 넘어 왔다고 가정 한다

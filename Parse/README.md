@@ -37,3 +37,12 @@
 |             DoubleParse | 4,048.5 ns | 41.76 ns | 39.06 ns | 0.0839 |     720 B |
 | DoubleSpanParseInternal | 3,631.5 ns | 25.60 ns | 23.95 ns |      - |         - |
 |   DoubleSpanParseCustom |   985.4 ns |  4.85 ns |  4.30 ns |      - |         - |
+
+
+ * 추가로 double.Parse(string)과 DoubleParser.Parse(string.AsSpan)도 Custom 함수가 더 빠른 것을 볼 수 있다
+ * 안전성이 보장된다면, IESObject.Get, GetOrDefault에서도 사용하면 좋을 것 같다
+
+|                  Method |       Mean |    Error |   StdDev |  Gen 0 | Allocated |
+|------------------------ |-----------:|---------:|---------:|-------:|----------:|
+|       DoubleDirectParse | 3.730 us | 0.0103 us | 0.0097 us |      - |         - |
+|   DoubleDirectSpanParse | 1.043 us | 0.0031 us | 0.0029 us |      - |         - |
