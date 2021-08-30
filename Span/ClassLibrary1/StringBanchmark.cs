@@ -45,6 +45,15 @@ namespace ClassLibrary1
         }
 
         [Benchmark]
+        public void ToStringArray_NotResize()
+        {
+            var strings = toStringArray_property.AsSpan().ToStringArraySafeNotResize();
+            if (strings[0] != "v1_longclassname") throw new Exception();
+            if (strings[1] != "v2_longclassname") throw new Exception();
+            if (strings[2] != "v3_longclassname") throw new Exception();
+        }
+
+        [Benchmark]
         public void ToStringArray_SpanSplitEnumerator()
         {
             var strings = toStringArray_property.AsSpan().ToStringArraySafe();
@@ -123,6 +132,24 @@ namespace ClassLibrary1
             var kv = property.AsSpan().ToStringString();
             if (kv.Key != "long_test_string") throw new Exception();
             if (kv.Value != "long_test_string") throw new Exception();
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class ToStringDoublePairDictionaryBenchMark
+    {
+        private const string testString = "{1:1:1,2:1:1,3:1:1,4:1:1,5:1:1,6:1:1,7:1:1,8:1:1,9:1:1}";
+
+        [Benchmark]
+        public void ToStringDoublePairDictionary()
+        {
+            var _ = testString.ToStringDoublePairDictionary();
+        }
+
+        [Benchmark]
+        public void ToStringDoublePairDictionaryWithSpan()
+        {
+            var _ = testString.AsSpan().ToStringDoublePairDictionary();
         }
     }
 }

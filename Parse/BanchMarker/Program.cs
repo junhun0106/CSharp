@@ -85,16 +85,34 @@ namespace IntParse
         }
     }
 
+    [MemoryDiagnoser]
+    public class DoubleParseBenchMark
+    {
+        private string testString = double.MaxValue.ToString();
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            var s = "11.11";
-            var r = DoubleParser.Parse(s);
+            //var maxString = double.MaxValue.ToString();
+            //var maxValue1 = double.Parse(maxString);
+            //var maxValue2 = DoubleParser.Parse(maxString);
+            //var maxValue3 = StringToDouble.Parse(maxString, 0, out var _);
+            //var bool1 = maxValue1 == maxValue2;
+            //var subs = maxValue1 - maxValue2;
+            //Console.WriteLine(maxValue1 == maxValue2);
+            //Console.WriteLine(subs <= double.Epsilon);
 
+            double.TryParse("-1E-325", out var r);
             Console.WriteLine(r);
+            var positiveInfinity = DoubleParser.Parse("+1E+309");
+            Console.WriteLine(DoubleParser.Parse("+1E+309"));
+            Console.WriteLine(positiveInfinity - double.PositiveInfinity);
+            Console.WriteLine(DoubleParser.Parse("-1E+309"));
+            Console.WriteLine(DoubleParser.Parse("-1E-325"));
 
-            BenchmarkSwitcher.FromAssembly(typeof(BoolParseBenchMark).Assembly).Run(args);
+            //BenchmarkSwitcher.FromAssembly(typeof(BoolParseBenchMark).Assembly).Run(args);
         }
     }
 }

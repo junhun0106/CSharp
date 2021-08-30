@@ -90,6 +90,28 @@ namespace ClassLibrary1
             return result.ToArray();
         }
 
+        public static string[] ToStringArraySafeNotResize(this ReadOnlySpan<char> property)
+        {
+            if (property.IsEmpty) {
+                return Array.Empty<string>();
+            }
+
+            int capacity = 0;
+            for (int i = 0; i < property.Length; ++i) {
+                var prop = property[i];
+                if (prop == ',' || prop == ';') {
+                    capacity++;
+                }
+            }
+
+            var result = new List<string>(capacity);
+            foreach (var entry in property.Trim(trimChars).Split(separators, StringSplitOptions.RemoveEmptyEntries)) {
+                result.Add(entry.Trim().ToString());
+            }
+
+            return result.ToArray();
+        }
+
         public static string[] ToStringArraySafe_2(this ReadOnlySpan<char> property)
         {
             if (property.IsEmpty) {
@@ -102,6 +124,32 @@ namespace ClassLibrary1
             }
 
             return result.ToArray();
+        }
+
+        public static Dictionary<string, KeyValuePair<string, double>> ToStringDoublePairDictionary(this ReadOnlySpan<char> property)
+        {
+            var dic = new Dictionary<string, KeyValuePair<string, double>>(StringComparer.Ordinal);
+            foreach (var entry in property.Trim(trimChars).Split(separators)) {
+                int index = 0;
+                string key = null;
+                string kvKey = null;
+                double kvValue = 0d;
+                foreach (var entry2 in entry.Split(':')) {
+                    if (index == 0) {
+                        key = entry2.ToString();
+                    } else if (index == 1) {
+                        kvKey = entry2.ToString();
+                    } else {
+                        kvValue = double.Parse(entry2.ToString());
+                    }
+                }
+
+                if (!dic.ContainsKey(key)) {
+                    dic.Add(key, new KeyValuePair<string, double>(kvKey, kvValue));
+                }
+            }
+
+            return dic;
         }
     }
 }
