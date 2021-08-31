@@ -100,7 +100,7 @@ namespace ChatService.Sockets
                         if (position != null) {
                             // Process the line
                             var array = buffer.Slice(0, position.Value).ToArray();
-                            var (packetId, packet) = GetPacket(array);
+                            var (packetId, packet) = GetPacket(in array);
                             if (packet == null || string.IsNullOrEmpty(packetId)) {
                                 Disconnect("RecvReadPipeAsync.InvalidPacketId");
                                 break;
@@ -299,22 +299,30 @@ namespace ChatService.Sockets
             }
         }
 
-        private (string pksId, PacketServerBase pks) GetPacket(byte[] array)
+        private static readonly JsonSerializerSettings _settings = new JsonSerializerSettings {
+            MissingMemberHandling = MissingMemberHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore,
+        };
+        private static readonly byte[] separator = new byte[] { 44 };
+
+        private (string pksId, PacketServerBase pks) GetPacket(in byte[] array)
         {
-            var packetString = Encoding.UTF8.GetString(array);
-            var split = packetString.Split(',');
-            if (split.Length < 2) {
-                _logger.LogError($"[{Id}] GetPacket - {packetString}");
+            var span = array.AsSpan();
+            var index = span.IndexOfAny(separator);
+            var idSlice = span.Slice(0, index);
+            var bodySlice = span.Slice(index + 1);
+            if (idSlice.IsEmpty) {
+                _logger.LogError($"[{Id}] GetPacket - {Encoding.UTF8.GetString(array)}");
                 return (pksId: null, pks: null);
             }
-            var pksId = split[0];
-            var body = packetString.Remove(0, pksId.Length + 1);
+            var pksId = Encoding.UTF8.GetString(idSlice);
+            var body = Encoding.UTF8.GetString(bodySlice);
 
             try {
                 var type = ReceivePackets.Get(pksId);
-                var obj = JsonConvert.DeserializeObject(body, type);
+                var obj = JsonConvert.DeserializeObject(body, type, _settings);
                 var packet = obj as PacketServerBase;
-
                 return (pksId, packet);
             } catch (Exception ex) {
                 _logger.LogError($"[{Id}] GetPacket - {ex}");
