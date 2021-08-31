@@ -9,11 +9,6 @@
 >  * [System.IO.Pipelines 사용 후기](http://leafbird.github.io/devnote/2020/12/27/C-%EA%B3%A0%EC%84%B1%EB%8A%A5-%EC%84%9C%EB%B2%84-System-IO-Pipeline-%EB%8F%84%EC%9E%85-%ED%9B%84%EA%B8%B0/)처럼 장점(메모리 사용)만 사용하는 경우도 있음
 >  * 혹은 [링크](https://github.com/davidfowl/TcpEcho/blob/master/src/Server/Program.cs)처럼 Task의 개수를 최대한 줄여서 사용하는 경우도 있음
 
-> 2021. 08. 31
->> 불필요한 Task.Delay 제거
->> 최대한 Task 사용 제한
->> TODO : 패킷 송신에서 PipeWriter, PipeReader가 아닌 버퍼 재사용만 간단하게 구현 가능하도록 하자 
-
 ---
 
 > * BlockingCollection
@@ -50,3 +45,13 @@
 > * 매칭 서버는 connection과 disconnect이 잦은 서버이고, connection이 오래 유지되지 않음
 > * 따라서, 서버에 연결 되어 있는 클라이언트 개수가 적으므로 안전하게 메인 루프로 패킷을 모음
 > * 내부 테스트 혹은 퍼블리셔 테스트에서도 크게 문제 되지 않음
+
+---
+
+#### history
+
+* 2021. 8. 31
+> * 불필요한 Task.Delay 제거
+> * 최대한 Task 사용 제한
+> * CPU 점유율 감소(20~30%)
+> * TODO : 패킷 송신에서 PipeWriter, PipeReader가 아닌 버퍼 재사용만 간단하게 구현 가능하도록 하자 
