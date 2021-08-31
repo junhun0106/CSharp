@@ -65,7 +65,6 @@ namespace ChatService
                 var socket = await listenSocket.AcceptAsync().ConfigureAwait(false);
                 socket.NoDelay = true;
                 Accept(socket);
-                await Task.Delay(0).ConfigureAwait(false);
             }
         }
 
