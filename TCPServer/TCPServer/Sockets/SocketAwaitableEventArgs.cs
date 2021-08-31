@@ -7,7 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace ChatService.Sockets {
-    public class SocketAwaitableEventArgs : SocketAsyncEventArgs, ICriticalNotifyCompletion {
+    public class SocketAwaitableEventArgs : SocketAsyncEventArgs, ICriticalNotifyCompletion
+    {
         private static readonly Action _callbackCompleted = () => { };
 
         private Action _callback;
@@ -22,15 +23,10 @@ namespace ChatService.Sockets {
             _callback = null;
 
             if (SocketError != SocketError.Success) {
-                ThrowSocketException(SocketError);
+                throw new SocketException((int)SocketError);
             }
 
             return BytesTransferred;
-
-            void ThrowSocketException(SocketError e)
-            {
-                throw new SocketException((int)e);
-            }
         }
 
         public void OnCompleted(Action continuation)
@@ -51,7 +47,7 @@ namespace ChatService.Sockets {
             OnCompleted(this);
         }
 
-        protected override void OnCompleted(SocketAsyncEventArgs _)
+        private void OnCompleted(SocketAsyncEventArgs _)
         {
             var continuation = Interlocked.Exchange(ref _callback, _callbackCompleted);
 

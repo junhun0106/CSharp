@@ -84,19 +84,48 @@ namespace ChatService.Sockets
             var pipe = new Pipe();
 
             try {
-                var writing = RecvFillPipeAsync(_socket, pipe.Writer);
-                var reading = RecvReadPipeAsync(pipe.Reader);
+                var stream = new NetworkStream(_socket);
+                var reader = PipeReader.Create(stream);
 
-                await Task.WhenAll(reading, writing).ConfigureAwait(false);
-            } catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode)) {
-                // This could be ignored if _shutdownReason is already set.
-                error = new ConnectionResetException(ex.Message, ex);
+                while (!_socketDisposed) {
+                    ReadResult result = await reader.ReadAsync().ConfigureAwait(false);
 
-                // There's still a small chance that both DoReceive() and DoSend() can log the same connection reset.
-                // Both logs will have the same ConnectionId. I don't think it's worthwhile to lock just to avoid this.
-                if (!_socketDisposed) {
-                    _logger.LogError($"{ex}");
+                    ReadOnlySequence<byte> buffer = result.Buffer;
+                    SequencePosition? position;
+                    do {
+                        // Look for a EOL in the buffer
+                        const byte eol = 10; // (byte)'\n'
+                        position = buffer.PositionOf(eol);
+
+                        if (position != null) {
+                            // Process the line
+                            var array = buffer.Slice(0, position.Value).ToArray();
+                            var (packetId, packet) = GetPacket(array);
+                            if (packet == null || string.IsNullOrEmpty(packetId)) {
+                                Disconnect("RecvReadPipeAsync.InvalidPacketId");
+                                break;
+                            }
+
+                            if (_directDispatch.Contains(packetId)) {
+                                _dispatcher.Dispatcher.DispatchPacket(_owner, packetId, packet);
+                            } else {
+                                _dispatcher.AddPacket(_owner, packetId, packet);
+                            }
+
+                            // Skip the line + the \n character (basically position)
+                            buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
+                        }
+
+                    } while (position != null);
+
+                    reader.AdvanceTo(buffer.Start, buffer.End);
+
+                    if (result.IsCompleted) {
+                        break;
+                    }
                 }
+
+                await reader.CompleteAsync().ConfigureAwait(false);
             } catch (Exception ex)
                 when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode))
                       || ex is ObjectDisposedException) {
@@ -118,33 +147,6 @@ namespace ChatService.Sockets
             }
         }
 
-        private async Task RecvFillPipeAsync(Socket socket, PipeWriter writer)
-        {
-            const int minimumBufferSize = 512;
-
-            while (!_socketDisposed) {
-                try {
-                    var memory = writer.GetMemory(minimumBufferSize);
-
-                    int bytesRead = await socket.ReceiveAsync(memory, SocketFlags.None).ConfigureAwait(false);
-                    if (bytesRead == 0) {
-                        break;
-                    }
-
-                    writer.Advance(bytesRead);
-                } catch {
-                    break;
-                }
-
-                FlushResult result = await writer.FlushAsync().ConfigureAwait(false);
-                if (result.IsCompleted) {
-                    break;
-                }
-            }
-
-            await writer.CompleteAsync().ConfigureAwait(false);
-        }
-
         /// <summary>
         /// ServerType.ReadOnly인 경우 네트워크 스레드에서 곧바로 로직을 수행 한다
         /// </summary>
@@ -156,48 +158,6 @@ namespace ChatService.Sockets
             "RoomSearch",
         };
 
-        private async Task RecvReadPipeAsync(PipeReader reader)
-        {
-            while (!_socketDisposed) {
-                ReadResult result = await reader.ReadAsync().ConfigureAwait(false);
-
-                ReadOnlySequence<byte> buffer = result.Buffer;
-                SequencePosition? position;
-                do {
-                    // Look for a EOL in the buffer
-                    position = buffer.PositionOf((byte)'\n');
-
-                    if (position != null) {
-                        // Process the line
-                        var array = buffer.Slice(0, position.Value).ToArray();
-                        var (packetId, packet) = GetPacket(array);
-                        if (packet == null || string.IsNullOrEmpty(packetId)) {
-                            Disconnect("RecvReadPipeAsync.InvalidPacketId");
-                            break;
-                        }
-
-                        if (_directDispatch.Contains(packetId)) {
-                            _dispatcher.Dispatcher.DispatchPacket(_owner, packetId, packet);
-                        } else {
-                            _dispatcher.AddPacket(_owner, packetId, packet);
-                        }
-
-                        // Skip the line + the \n character (basically position)
-                        buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
-                    }
-
-                } while (position != null);
-
-                reader.AdvanceTo(buffer.Start, buffer.End);
-
-                if (result.IsCompleted) {
-                    break;
-                }
-            }
-
-            await reader.CompleteAsync().ConfigureAwait(false);
-        }
-
         private async Task DoSendingTask()
         {
             Exception shutdownReason = null;
@@ -206,10 +166,7 @@ namespace ChatService.Sockets
             var pipe = new Pipe();
 
             try {
-                var pooling = PoolingSocketDataAsync(pipe.Writer);
-                var process = ProcessSocketDataAsync(pipe.Reader);
-
-                await Task.WhenAll(pooling, process).ConfigureAwait(false);
+                await PoolingSocketDataAsync(pipe.Writer, pipe.Reader).ConfigureAwait(false);
             } catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode)) {
                 shutdownReason = new ConnectionResetException(ex.Message, ex);
                 _logger.LogError($"{ex}");
@@ -233,11 +190,9 @@ namespace ChatService.Sockets
             }
         }
 
-        private async Task PoolingSocketDataAsync(PipeWriter writer)
+        private async Task PoolingSocketDataAsync(PipeWriter writer, PipeReader reader)
         {
             while (!_socketDisposed) {
-                await Task.Delay(10).ConfigureAwait(false);
-
                 int advanced = 0;
                 try {
                     while (_sendQueue.TryDequeue(out var data)) {
@@ -254,42 +209,38 @@ namespace ChatService.Sockets
                 }
 
                 if (advanced > 0) {
-                    FlushResult result = await writer.FlushAsync().ConfigureAwait(false);
-                    if (result.IsCompleted) {
+                    FlushResult flush = await writer.FlushAsync().ConfigureAwait(false);
+                    if (flush.IsCompleted) {
                         break;
                     }
+
+                    // todo : pipe Writer, Reader를 하나로 합쳐서 구현하자
+                    var result = await reader.ReadAsync().ConfigureAwait(false);
+
+                    if (result.IsCanceled) {
+                        break;
+                    }
+
+                    var buffer = result.Buffer;
+
+                    var end = buffer.End;
+                    var isCompleted = result.IsCompleted;
+
+                    if (!buffer.IsEmpty) {
+                        await _sender.SendAsync(buffer);
+                    }
+
+                    reader.AdvanceTo(end);
+
+                    if (isCompleted) {
+                        break;
+                    }
+                } else {
+                    await Task.Delay(10).ConfigureAwait(false);
                 }
             }
 
             await writer.CompleteAsync().ConfigureAwait(false);
-        }
-
-        private async Task ProcessSocketDataAsync(PipeReader reader)
-        {
-            while (!_socketDisposed) {
-                ReadResult result = await reader.ReadAsync().ConfigureAwait(false);
-
-                if (result.IsCanceled) {
-                    break;
-                }
-
-                var buffer = result.Buffer;
-
-                var end = buffer.End;
-                var isCompleted = result.IsCompleted;
-
-                if (!buffer.IsEmpty) {
-                    await _sender.SendAsync(buffer);
-                }
-
-                reader.AdvanceTo(end);
-
-                if (isCompleted) {
-                    break;
-                }
-            }
-
-            await reader.CompleteAsync().ConfigureAwait(false);
         }
 
         public void SendPacket<T>(T msg) where T : PacketClientBase
