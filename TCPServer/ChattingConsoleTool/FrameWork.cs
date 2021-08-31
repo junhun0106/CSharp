@@ -134,6 +134,11 @@ namespace ChattingMultiTool
                     clients[familyName].Reconnect();
                 }
                 clientCount -= enterPerSec;
+                
+                foreach (var client in clients) {
+                    client.Value.PostUpdate();
+                }
+
                 sw.Stop();
                 Log.Debug($"{_logger} : {tryCount}/{config.ClientCount} connect try, et : {sw.ElapsedMilliseconds}ms");
                 await DelayAsync().ConfigureAwait(false);
