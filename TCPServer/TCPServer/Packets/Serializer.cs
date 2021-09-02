@@ -1,21 +1,34 @@
-﻿using System.Reflection;
-using System.Text;
+﻿using System.Text;
 using Interfaces;
-using Newtonsoft.Json;
+using System.Text.Json;
+using JetBrains.Annotations;
 
 namespace ChatService.Packets
 {
     public static class Serializer
     {
-        public static byte[] Serialize<Packet>(Packet packet) where Packet : PacketClientBase
+        [CanBeNull]
+        public static byte[] Serialize<Packet>(Packet packet) where Packet : ServerToClient
         {
             var type = packet.GetType();
-            var attr = type.GetCustomAttribute<PacketClientAttribute>();
-            var key = attr.Name;
-            var body = JsonConvert.SerializeObject(packet);
-            var format = $"{key},{body}";
-            var bytes = Encoding.UTF8.GetBytes(format + '\n');
-            return bytes;
+            var key = ServerToClientPackets.Get(type);
+            if (!string.IsNullOrEmpty(key)) {
+                var body = JsonSerializer.Serialize(packet, options: JsonSerializerOption.Option);
+
+                ValueStringBuilder sb = default;
+                try {
+                    sb = new ValueStringBuilder(200);
+                    sb.Append(key);
+                    sb.Append(',');
+                    sb.Append(body);
+                    sb.Append('\n');
+                    return Encoding.UTF8.GetBytes(sb.ToString());
+                } finally {
+                    sb.Dispose();
+                }
+            }
+
+            return null;
         }
     }
 }
