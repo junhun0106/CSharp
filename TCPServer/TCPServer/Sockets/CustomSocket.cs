@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using JetBrains.Annotations;
@@ -26,6 +26,8 @@ namespace ChatService.Sockets
 
     public class CustomSocket : ICustomSocket
     {
+        private static readonly byte[] separator = new byte[] { 44 };
+
         private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         private static readonly bool IsMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
@@ -100,18 +102,7 @@ namespace ChatService.Sockets
                         if (position != null) {
                             // Process the line
                             var array = buffer.Slice(0, position.Value).ToArray();
-                            var (packetId, packet) = GetPacket(in array);
-                            if (packet == null || string.IsNullOrEmpty(packetId)) {
-                                Disconnect("RecvReadPipeAsync.InvalidPacketId");
-                                break;
-                            }
-
-                            if (_directDispatch.Contains(packetId)) {
-                                _dispatcher.Dispatcher.DispatchPacket(_owner, packetId, packet);
-                            } else {
-                                _dispatcher.AddPacket(_owner, packetId, packet);
-                            }
-
+                            ProcessReceive(in array);
                             // Skip the line + the \n character (basically position)
                             buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
                         }
@@ -142,6 +133,38 @@ namespace ChatService.Sockets
                 _logger.LogError($"{ex}");
             } finally {
                 Shutdown(error);
+            }
+        }
+
+        private void ProcessReceive(in byte[] array)
+        {
+            var span = array.AsSpan();
+            var index = span.IndexOfAny(separator);
+            var idSlice = span.Slice(0, index);
+            var bodySlice = span.Slice(index + 1);
+            if (idSlice.IsEmpty) {
+                _logger.LogError($"[{Id}] GetPacket - {Encoding.UTF8.GetString(array)}");
+                Disconnect("ProcessReceiveInternal.InvalidPacketId");
+                return;
+            }
+
+            string pksId;
+            ClientToServer packet;
+
+            try {
+                pksId = Encoding.UTF8.GetString(idSlice);
+                var type = ClientToServerPackets.Get(pksId);
+                var obj = JsonSerializer.Deserialize(bodySlice, type, JsonSerializerOption.Option);
+                packet = obj as ClientToServer;
+            } catch (Exception ex) {
+                Disconnect($"ProcessReceiveInternal.InvalidPacketId : {ex}");
+                return;
+            }
+
+            if (_directDispatch.Contains(pksId)) {
+                _dispatcher.Dispatcher.DispatchPacket(_owner, pksId, packet);
+            } else {
+                _dispatcher.AddPacket(_owner, pksId, packet);
             }
         }
 
@@ -295,38 +318,6 @@ namespace ChatService.Sockets
 
                 _logger.LogDebug($"[{Id}] Shutdown - {_shutdownReason.Message}");
             }
-        }
-
-        private static readonly JsonSerializerSettings _settings = new JsonSerializerSettings {
-            MissingMemberHandling = MissingMemberHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Ignore,
-        };
-        private static readonly byte[] separator = new byte[] { 44 };
-
-        private (string pksId, ClientToServer pks) GetPacket(in byte[] array)
-        {
-            var span = array.AsSpan();
-            var index = span.IndexOfAny(separator);
-            var idSlice = span.Slice(0, index);
-            var bodySlice = span.Slice(index + 1);
-            if (idSlice.IsEmpty) {
-                _logger.LogError($"[{Id}] GetPacket - {Encoding.UTF8.GetString(array)}");
-                return (pksId: null, pks: null);
-            }
-            var pksId = Encoding.UTF8.GetString(idSlice);
-            var body = Encoding.UTF8.GetString(bodySlice);
-
-            try {
-                var type = ClientToServerPackets.Get(pksId);
-                var obj = JsonConvert.DeserializeObject(body, type, _settings);
-                var packet = obj as ClientToServer;
-                return (pksId, packet);
-            } catch (Exception ex) {
-                _logger.LogError($"[{Id}] GetPacket - {ex}");
-            }
-
-            return (pksId: null, pks: null);
         }
 
         private static bool IsConnectionResetError(SocketError errorCode)
