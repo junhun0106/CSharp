@@ -50,13 +50,13 @@
 
 #### history
 
-* 2021. 8. 31
+* 2021-8-31
 	* 불필요한 Task.Delay 제거
 	* 최대한 Task 사용 제한
 	* CPU 점유율 감소(20~30%)
 	* TODO : 패킷 송신에서 PipeWriter, PipeReader가 아닌 버퍼 재사용만 간단하게 구현 가능하도록 하자 
 
-* 2021. 9. 2
+* 2021-9-2
 	* 메모리 최적화
 		* 최대한 Span 상태에서 해결 가능 하도록
 		* ValueStringBuilder 사용(StringBuilderPool 보다 약간 빠름, Kestrel 오픈 소스에서 자주 사용하는 것 발견)
