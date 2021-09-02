@@ -34,7 +34,7 @@ namespace ChatService
         public void Start()
         {
             // 패킷 파싱
-            var count = ReceivePackets.Count;
+            var count = ClientToServerPackets.Count;
 
             _logger.LogInformation($"Packet Init - count : {count}");
 

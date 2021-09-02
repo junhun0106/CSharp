@@ -24,31 +24,31 @@ namespace Interfaces
         }
     }
 
-    public abstract class PacketServerBase
+    public abstract class ClientToServer
     {
         public override string ToString()
         {
-            return GetType().BaseType?.Name ?? nameof(PacketServerBase);
+            return GetType().BaseType?.Name ?? nameof(ClientToServer);
         }
     }
 
     [PacketServer("Enter")]
-    public class PACKET_CS_ENTER : PacketServerBase
+    public class PACKET_CS_ENTER : ClientToServer
     {
         public string FamilyName;
     }
 
     [PacketServer("Chat")]
-    public class PACKET_CS_CHAT : PacketServerBase
+    public class PACKET_CS_CHAT : ClientToServer
     {
         public string Sender;
         public string Message;
     }
 
-    public abstract class PacketClientBase { }
+    public abstract class ServerToClient { }
 
     [PacketClient("Chat")]
-    public class PACKET_SC_CHAT : PacketClientBase
+    public class PACKET_SC_CHAT : ServerToClient
     {
         public string Sender;
         public string Message;

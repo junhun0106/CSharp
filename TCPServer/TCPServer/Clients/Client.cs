@@ -44,7 +44,7 @@ namespace ChatService.Clients
             _socket?.SendPacket(data);
         }
 
-        public void Send<T>(T packet) where T : PacketClientBase
+        public void Send<T>(T packet) where T : ServerToClient
         {
             _socket?.SendPacket(packet);
         }

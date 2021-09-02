@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace ChatService.Packets {
     public interface IDispatcher
     {
-        void DispatchPacket(object caller, string id, PacketServerBase pks);
+        void DispatchPacket(object caller, string id, ClientToServer pks);
     }
 
     public class PacketHandler : IDispatcher
@@ -43,7 +43,7 @@ namespace ChatService.Packets {
                     continue;
                 }
 
-                var pksId = ReceivePackets.Get(parameters[0].ParameterType);
+                var pksId = ClientToServerPackets.Get(parameters[0].ParameterType);
                 if (string.IsNullOrEmpty(pksId)) {
                     _logger.LogWarning("AddHandler - pksId is empty");
                     continue;
@@ -55,7 +55,7 @@ namespace ChatService.Packets {
             return true;
         }
 
-        public void DispatchPacket(object caller, string id, PacketServerBase pks)
+        public void DispatchPacket(object caller, string id, ClientToServer pks)
         {
             if (!handlerList.TryGetValue(id, out MethodInfo info)) {
                 _logger.LogWarning("DispatchPacket - not found id : {0}", id);

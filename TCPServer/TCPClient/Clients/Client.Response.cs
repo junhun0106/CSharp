@@ -8,7 +8,7 @@ namespace ClientLib.Chat.Clients
 {
     public partial class Client
     {
-        private readonly ConcurrentQueue<(string id, PacketClientBase pks)> _receiveQ = new ConcurrentQueue<(string, PacketClientBase)>();
+        private readonly ConcurrentQueue<(string id, ServerToClient pks)> _receiveQ = new ConcurrentQueue<(string, ServerToClient)>();
 
         internal void ProcessReceive(string packetString)
         {
@@ -16,10 +16,10 @@ namespace ClientLib.Chat.Clients
             if (split.Length > 1) {
                 var pksId = split[0];
                 try {
-                    var type = SendPackets.Get(pksId);
+                    var type = ServerToClientPackets.Get(pksId);
                     var body = packetString.Remove(0, pksId.Length + 1);
                     var obj = JsonConvert.DeserializeObject(body, type);
-                    if (obj is PacketClientBase pks) {
+                    if (obj is ServerToClient pks) {
                         _receiveQ.Enqueue((pksId, pks));
                         return;
                     }

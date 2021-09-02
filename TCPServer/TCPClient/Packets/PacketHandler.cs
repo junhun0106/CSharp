@@ -30,7 +30,7 @@ namespace ClientLib.Chat.Packets {
                     continue;
                 }
 
-                var pksId = SendPackets.Get(parameters[0].ParameterType);
+                var pksId = ServerToClientPackets.Get(parameters[0].ParameterType);
                 if (string.IsNullOrEmpty(pksId)) {
                     continue;
                 }
@@ -40,7 +40,7 @@ namespace ClientLib.Chat.Packets {
             return true;
         }
 
-        internal void DispatchPacket(object caller, string id, PacketClientBase pks, Action<string> errorLog = null)
+        internal void DispatchPacket(object caller, string id, ServerToClient pks, Action<string> errorLog = null)
         {
             if (!handlerList.TryGetValue(id, out MethodInfo info)) {
                 return;

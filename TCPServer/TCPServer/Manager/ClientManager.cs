@@ -30,7 +30,7 @@ namespace ChatService
             _clients.Remove(handle);
         }
 
-        public void BroadCast<T>(T packet) where T : PacketClientBase
+        public void BroadCast<T>(T packet) where T : ServerToClient
         {
             var bytes = Serializer.Serialize(packet);
             _clients.ForeEach(forEach);

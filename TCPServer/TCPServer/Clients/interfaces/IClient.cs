@@ -9,7 +9,7 @@ namespace ChatService.Clients
         void Disconnect(string caller = "");
 
         void Send(byte[] data);
-        void Send<T>(T packet) where T : PacketClientBase;
+        void Send<T>(T packet) where T : ServerToClient;
 
         void Close();
     }

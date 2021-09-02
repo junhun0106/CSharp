@@ -20,7 +20,7 @@ namespace ChatService.Sockets
     public interface ICustomSocket
     {
         void SendPacket(byte[] data);
-        void SendPacket<T>(T msg) where T : PacketClientBase;
+        void SendPacket<T>(T msg) where T : ServerToClient;
         void Disconnect(string caller = "");
     }
 
@@ -243,7 +243,7 @@ namespace ChatService.Sockets
             await writer.CompleteAsync().ConfigureAwait(false);
         }
 
-        public void SendPacket<T>(T msg) where T : PacketClientBase
+        public void SendPacket<T>(T msg) where T : ServerToClient
         {
             if (_socketDisposed) return;
             var data = Serializer.Serialize(msg);
@@ -306,7 +306,7 @@ namespace ChatService.Sockets
         };
         private static readonly byte[] separator = new byte[] { 44 };
 
-        private (string pksId, PacketServerBase pks) GetPacket(in byte[] array)
+        private (string pksId, ClientToServer pks) GetPacket(in byte[] array)
         {
             var span = array.AsSpan();
             var index = span.IndexOfAny(separator);
@@ -320,9 +320,9 @@ namespace ChatService.Sockets
             var body = Encoding.UTF8.GetString(bodySlice);
 
             try {
-                var type = ReceivePackets.Get(pksId);
+                var type = ClientToServerPackets.Get(pksId);
                 var obj = JsonConvert.DeserializeObject(body, type, _settings);
-                var packet = obj as PacketServerBase;
+                var packet = obj as ClientToServer;
                 return (pksId, packet);
             } catch (Exception ex) {
                 _logger.LogError($"[{Id}] GetPacket - {ex}");

@@ -7,7 +7,7 @@ namespace ChatService
     public interface IDispatcher
     {
         PacketHandler Dispatcher { get; }
-        void AddPacket(IClient client, string packetId, PacketServerBase packet);
+        void AddPacket(IClient client, string packetId, ClientToServer packet);
     }
 
     public interface IJobSchedule

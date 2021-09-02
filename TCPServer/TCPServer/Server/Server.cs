@@ -40,7 +40,7 @@ namespace ChatService
             JobQueue.Start();
         }
 
-        public void AddPacket(IClient client, string packetId, PacketServerBase packet)
+        public void AddPacket(IClient client, string packetId, ClientToServer packet)
         {
             AddJob(PacketJob.Create(client, packetId, packet));
         }

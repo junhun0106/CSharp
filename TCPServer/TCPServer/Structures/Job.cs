@@ -19,18 +19,18 @@ namespace ChatService
     {
         public readonly IClient Client;
         public readonly string PacketId;
-        public readonly PacketServerBase Packet;
+        public readonly ClientToServer Packet;
 
         public EJob Type { get; } = EJob.Packet;
 
-        public PacketJob(IClient client, string packetId, PacketServerBase packet)
+        public PacketJob(IClient client, string packetId, ClientToServer packet)
         {
             Client = client;
             PacketId = packetId;
             Packet = packet;
         }
 
-        public static PacketJob Create(IClient client, string packetId, PacketServerBase packet)
+        public static PacketJob Create(IClient client, string packetId, ClientToServer packet)
         {
             return new PacketJob(client, packetId, packet);
         }

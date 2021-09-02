@@ -5,22 +5,21 @@ using System.Reflection;
 namespace Interfaces
 {
     /// <summary>
-    /// 서버 -> 클라이언트
+    /// 클라이언트 -> 서버
     /// </summary>
-    public static class SendPackets {
-        public static IReadOnlyDictionary<string, Type> Packets => _packets;
-
-        public static IReadOnlyDictionary<Type, string> ReversePackets => _reversePackets;
-
+    public static class ClientToServerPackets {
         private static readonly Dictionary<string, Type> _packets = new Dictionary<string, Type>(StringComparer.Ordinal);
-        private static readonly Dictionary<Type, string> _reversePackets = new Dictionary<Type, string>();
+        private static readonly Dictionary<Type, string> _reversPackets = new Dictionary<Type, string>();
+
+        public static IReadOnlyDictionary<string, Type> Packets => _packets;
+        public static IReadOnlyDictionary<Type, string> ReversePackets => _reversPackets;
 
         public static int Count => Packets.Count;
 
         /// <summary>
         /// Thread Safe하지 않으므로, 반드시 MainThread 초기화 해야 한다
         /// </summary>
-        static SendPackets()
+        static ClientToServerPackets()
         {
             var types = Assembly.GetExecutingAssembly().GetTypes();
             foreach (var type in types) {
@@ -28,7 +27,7 @@ namespace Interfaces
                     continue;
                 }
 
-                var attr = type.GetCustomAttribute<PacketClientAttribute>();
+                var attr = type.GetCustomAttribute<PacketServerAttribute>();
                 if (attr != null) {
                     Add(attr.Name, type);
                 }
@@ -38,10 +37,9 @@ namespace Interfaces
         public static void Add(string name, Type type)
         {
             _packets.Add(name, type);
-            _reversePackets.Add(type, name);
+            _reversPackets.Add(type, name);
         }
 
-        // CanBeNull
         public static string Get(Type type)
         {
             if (ReversePackets.TryGetValue(type, out var name)) {
@@ -50,7 +48,6 @@ namespace Interfaces
             return null;
         }
 
-        // CanBeNull
         public static Type Get(string name)
         {
             if (Packets.TryGetValue(name, out var type)) {
