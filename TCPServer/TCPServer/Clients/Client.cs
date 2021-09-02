@@ -2,6 +2,7 @@
 using Interfaces;
 using ChatService.Sockets;
 using Microsoft.Extensions.Logging;
+using System.Buffers;
 
 namespace ChatService.Clients
 {
@@ -12,7 +13,7 @@ namespace ChatService.Clients
         private readonly ILogger _logger;
 
         public int Handle { get; }
-        public Client(int handle, Socket socket, IServer server, ILoggerFactory loggerFactory)
+        public Client(int handle, Socket socket, IServer server, MemoryPool<byte> pool, ILoggerFactory loggerFactory)
         {
             Handle = handle;
             _server = server;

@@ -32,6 +32,7 @@ namespace ChatService.Sockets
         [NotNull] private IClient _owner;
         [NotNull] private IDispatcher _dispatcher;
         [NotNull] private Socket _socket;
+        [NotNull] private readonly MemoryPool<byte> _pool;
         [NotNull] private readonly SocketSender _sender;
         [NotNull] private readonly object _shutdownLock = new object();
         private volatile bool _socketDisposed;
@@ -45,11 +46,12 @@ namespace ChatService.Sockets
 
         public int Id { get; }
 
-        public CustomSocket(IDispatcher dispatcher, IClient owner, Socket socket, ILogger logger)
+        public CustomSocket(IDispatcher dispatcher, IClient owner, Socket socket, MemoryPool<byte> pool, ILogger logger)
         {
             _owner = owner;
             _dispatcher = dispatcher;
             _socket = socket;
+            _pool = pool;
             _sender = new SocketSender(_socket);
             _logger = logger;
             Task.Factory.StartNew(StartAsync);
@@ -80,12 +82,10 @@ namespace ChatService.Sockets
 
         private async Task DoReceiveTask()
         {
-            Exception error = null;
-            var pipe = new Pipe();
-
+            Exception error = null; 
             try {
                 var stream = new NetworkStream(_socket);
-                var reader = PipeReader.Create(stream);
+                var reader = PipeReader.Create(stream, new StreamPipeReaderOptions(pool: _pool));
 
                 while (!_socketDisposed) {
                     ReadResult result = await reader.ReadAsync().ConfigureAwait(false);
@@ -142,8 +142,6 @@ namespace ChatService.Sockets
                 _logger.LogError($"{ex}");
             } finally {
                 Shutdown(error);
-                // If Shutdown() has already be called, assume that was the reason ProcessReceives() exited.
-                await pipe.Writer.CompleteAsync(_shutdownReason ?? error).ConfigureAwait(false);
             }
         }
 
@@ -163,7 +161,7 @@ namespace ChatService.Sockets
             Exception shutdownReason = null;
             Exception unexpectedError = null;
 
-            var pipe = new Pipe();
+            var pipe = new Pipe(new PipeOptions(pool: _pool));
 
             try {
                 await PoolingSocketDataAsync(pipe.Writer, pipe.Reader).ConfigureAwait(false);

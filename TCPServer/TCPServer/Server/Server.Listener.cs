@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -16,6 +17,7 @@ namespace ChatService
         private Socket _listenSocket;
 
         private readonly IServer _server;
+        private readonly MemoryPool<byte> _pool;
 
         private const int WaitListeningCount = 400;
 
@@ -26,7 +28,7 @@ namespace ChatService
         {
             _server = server;
             _port = port;
-
+            _pool = Sockets.Buffers.SlabMemoryPoolFactory.CreateSlabMemoryPool();
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<Listener>();
         }
@@ -70,7 +72,7 @@ namespace ChatService
 
         private void Accept(Socket socket)
         {
-            var client = new Client(Interlocked.Increment(ref _handle), socket, _server, _loggerFactory);
+            var client = new Client(Interlocked.Increment(ref _handle), socket, _server, _pool, _loggerFactory);
             _server.AddWait(client);
         }
 
