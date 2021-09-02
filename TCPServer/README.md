@@ -57,9 +57,13 @@
 	* TODO : 패킷 송신에서 PipeWriter, PipeReader가 아닌 버퍼 재사용만 간단하게 구현 가능하도록 하자 
 
 * 2021-9-2
+	* Pipe 최적화
+		* SlabMemoryPool 활용(Kestrel 오픈 소스에서 자주 사용하는 것 발견, SlabMemory 이론 참고)
+			* .NET 5.0에서는 PinnedBlockMemoryPool 사용
+			* 일반적으로 메모리 고정을 할 수 있는 GCHandle(or fixed)에서 GC.AllocateUninitializedArray 함수가 추가
 	* 메모리 최적화
 		* 최대한 Span 상태에서 해결 가능 하도록
-		* ValueStringBuilder 사용(StringBuilderPool 보다 약간 빠름, Kestrel 오픈 소스에서 자주 사용하는 것 발견)
+		* ValueStringBuilder 사용(StringBuilderPool 보다 약간 빠름(readonly ref struct), Kestrel 오픈 소스에서 자주 사용하는 것 발견)
 		* System.Text.Json 사용(Span 활용, Json 벤치마크 참고)
 	* 기타
 		* 네이밍 변경
