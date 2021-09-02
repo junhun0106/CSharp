@@ -17,7 +17,7 @@ namespace ChatService.Clients
         {
             Handle = handle;
             _server = server;
-            _socket = new CustomSocket(_server, this, socket, loggerFactory.CreateLogger<CustomSocket>()) {
+            _socket = new CustomSocket(_server, this, socket, pool, loggerFactory.CreateLogger<CustomSocket>()) {
                 OnDisconnect = OnDisconnect,
             };
 
