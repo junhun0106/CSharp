@@ -8,6 +8,17 @@
 	* [고정(pinning)](https://docs.microsoft.com/ko-kr/dotnet/framework/interop/copying-and-pinning)
 ---
 
+* C#에서 서버 송수신에서 가장 고민하게 되는 것은 크게 3가지가 있다
+	* SocketAsyncEventArgs 방식
+		* 버퍼 재사용에 관한 문제
+	* 버퍼 재사용을 위한 솔루션 System.IO.Pipelines
+		* 샘플 코드를 보면 Task를 왜 이렇게 많이 사용하지 ?
+		* 프로파일링을 해보면 메모리 누수는 일어나지 않지만, 메모리 할당이 많아 GC Wait으로 인해 너무 자주 끊기네 ?
+		
+* 이 프로젝트는 메모리 할당을 많이 차지하는 이유에 대해서 연구해본다
+	* 아직 Slab Memory와 메모리 고정 그리고 .net 5.0 이상부터 등장한 POH에 관한 연구가 덜 되었다.
+	* 이론은 차차 공부해도록하고, 결과를 보면서 이야기해보자.
+
 #### .net 5.0
 
 ##### Rent
