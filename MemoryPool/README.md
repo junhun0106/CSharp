@@ -31,7 +31,7 @@
 
 ---
 
-* MemoryPool.Shared에 기본 메모리풀은 ArrayMemoryPool이다.
+* **new Pipe(PipeOptions.Default)** 에서 사용하는 메모리 풀은 MemoryPool.Shared에 기본 메모리풀인 **ArrayMemoryPool** 이다.
 * 편의상 아래와 같이 언급하겠다
 	* ArrayMemoryPool은 default
 	* SlabMemoryPool은 slab
