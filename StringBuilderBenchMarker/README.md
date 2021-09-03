@@ -6,6 +6,9 @@
 	* 모든 StringBuilder는 'string.Length == 1' 이거나 char를 받는 경우에는 속도가 비슷하다
 		* 따라서, testString이 긴 경우에만 테스트를 한다
 
+
+* [MyWiki](https://github.com/junhun0106/CSharp/wiki/%5BOptimize%5D-StringBuilder)
+
 ---
 
 #### .net 5.0 + .net standard 2.1
