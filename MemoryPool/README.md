@@ -70,6 +70,6 @@
 |        SlabMemoryPool | 141.89 ns | 0.544 ns | 0.454 ns |      - |         - |
 |      PinnedMemoryPool | 138.51 ns | 0.560 ns | 0.524 ns |      - |         - |
 
-* single thread 기반으로 만들고, 불필요한 예외 처리 등을 제거 했기 때문에 custom이 가장 빠른 것을 볼 수 있다
-	* 다만, PipeOption 등에 사용하려면 안정성 테스트와 Thread Safe하게 동작하는 지 테스트를 거쳐야 한다
-	* 즉, 테스트용으로 만들어졌기 때문에 굳이 사용 할 필요가 없고 Kestrel에서 훌륭히 사용되고 있는 MemoryPool을 가져다 사용하자			
+* single thread 기반으로 만들고, 불필요한 예외 처리 등을 제거 했기 때문에 custom이 가장 빠른 것을 볼 수 있다.
+	* 다만, PipeOption 등에 사용하려면 안정성 테스트와 Thread Safe하게 동작하는 지 테스트를 거쳐야 한다.
+	* 즉, 테스트용으로 만들어졌기 때문에 굳이 사용 할 필요가 없고 Kestrel이라는 훌륭한 open source를 활용하자.		
