@@ -8,6 +8,13 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Newtonsoft.Json;
 using System.Linq;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Validators;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Columns;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Environments;
+using BenchmarkDotNet.Exporters;
 
 namespace Tester
 {
@@ -412,7 +419,7 @@ namespace Tester
     }
 
     [MemoryDiagnoser]
-    public class ListFind
+    public class ListFindBenchmark
     {
         private readonly List<string> _list = new List<string> {
             "a",
@@ -579,7 +586,19 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            BenchmarkSwitcher.FromAssembly(typeof(SelectToListBenchmark).Assembly).Run(args);
+            //BenchmarkSwitcher.FromAssembly(typeof(SelectToListBenchmark).Assembly).Run(args);
+
+            var customConfig = ManualConfig
+              .Create(DefaultConfig.Instance)
+              .AddValidator(JitOptimizationsValidator.FailOnError)
+              .AddDiagnoser(MemoryDiagnoser.Default)
+              .AddColumn(StatisticColumn.AllStatistics)
+              .AddJob(Job.Default.WithRuntime(CoreRuntime.Core31))
+              .AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
+              .AddExporter(DefaultExporters.Markdown);
+
+            //BenchmarkRunner.Run<MySqlConnectorBenchmark>(customConfig);
+            BenchmarkRunner.Run<ListFindBenchmark>(customConfig);
         }
     }
 }
