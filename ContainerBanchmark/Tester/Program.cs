@@ -364,6 +364,81 @@ namespace Tester
         }
     }
 
+    [MemoryDiagnoser]
+    public class DictionaryValuesBenchmark
+    {
+        class Data
+        {
+            public readonly string id;
+
+            public Data(string id)
+            {
+                this.id = id;
+            }
+        }
+
+        readonly Dictionary<string, Data> _dictionary = new();
+
+        [GlobalSetup]
+        public void GlobalSetUp()
+        {
+            for (int i = 0; i < 100; ++i) {
+                var @string = i.ToString();
+                _dictionary.Add(@string, new Data(@string));
+            }
+        }
+
+        [Benchmark]
+        public void Values()
+        {
+            foreach (var value in _dictionary.Values)
+            {
+
+            }
+        }
+
+        [Benchmark]
+        public void Foreach()
+        {
+            foreach(var kv in _dictionary)
+            {
+                var value = kv.Value;
+            }
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class DictionaryStringComparerBenchmark
+    {
+        private readonly Dictionary<string, string> _dictionary1 = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _dictionary2 = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        [GlobalSetup]
+        public void GlobalSetUp()
+        {
+            for (int i = 0; i < 100; ++i)
+            {
+                _dictionary1.Add(i.ToString(), i.ToString());
+                _dictionary2.Add(i.ToString(), i.ToString());
+
+            }
+        }
+
+        [Benchmark]
+        public void DefaultComparer()
+        {
+            for (int i = 0; i < 100; ++i)
+                _dictionary1.TryGetValue("100", out var _);
+        }
+
+        [Benchmark]
+        public void StringOrdinalComparer()
+        {
+            for (int i = 0; i < 100; ++i)
+                _dictionary2.TryGetValue("100", out var _);
+        }
+    }
+
     public static class ArrayExntensions
     {
         public static T Find<T>(this T[] array, Predicate<T> pred)
@@ -447,6 +522,70 @@ namespace Tester
         public void Find()
         {
             var _ = _list.Find(x => x == "a");
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class ListAnyBenchmark
+    {
+        private readonly List<string> _list = new List<string> {
+            "a",
+            "a",
+            "a",
+            "a",
+            "a",
+            "a",
+            "b",
+            "b",
+            "b",
+            "b",
+            "b",
+            "b",
+            "b",
+        };
+
+        [Benchmark]
+        public void Any()
+        {
+            var _ = _list.Any();
+        }
+
+        [Benchmark]
+        public void Count()
+        {
+            var _ = _list.Count > 0;
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class ListFindNullVsAnyBenchmark
+    {
+        private readonly List<string> _list = new List<string> {
+            "a",
+            "a",
+            "a",
+            "a",
+            "a",
+            "a",
+            "b",
+            "b",
+            "b",
+            "b",
+            "b",
+            "b",
+            "b",
+        };
+
+        [Benchmark]
+        public void FindNull()
+        {
+            var _ = _list.Find(x => x == "a") != null;
+        }
+
+        [Benchmark]
+        public void Any()
+        {
+            var _ = _list.Any(x => x == "a");
         }
     }
 
@@ -582,9 +721,9 @@ namespace Tester
         }
     }
 
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] _)
         {
             //BenchmarkSwitcher.FromAssembly(typeof(SelectToListBenchmark).Assembly).Run(args);
 
@@ -598,7 +737,7 @@ namespace Tester
               .AddExporter(DefaultExporters.Markdown);
 
             //BenchmarkRunner.Run<MySqlConnectorBenchmark>(customConfig);
-            BenchmarkRunner.Run<ListFindBenchmark>(customConfig);
+            BenchmarkRunner.Run<DictionaryStringComparerBenchmark>(customConfig);
         }
     }
 }
