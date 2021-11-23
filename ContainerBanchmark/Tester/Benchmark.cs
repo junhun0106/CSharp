@@ -1,50 +1,13 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
 using System;
 using System.Collections.Generic;
-using ClassLibrary1;
 using System.Globalization;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Collections;
 
 namespace Tester
 {
-    public class Container : IEnumerable<Input>
-    {
-        private readonly IEnumerable<Input> _list = new List<Input> {
-            new Input("a"),
-            new Input("a"),
-            new Input("a"),
-            new Input("a"),
-            new Input("a"),
-            new Input("a"),
-            new Input("b"),
-            new Input("b"),
-            new Input("b"),
-            new Input("b"),
-            new Input("b"),
-            new Input("b"),
-            new Input("b"),
-        };
-
-        public Input GetOrDefault(Predicate<Input> predicate)
-        {
-            foreach(var input in _list) {
-                if (predicate(input)) {
-                    return input;
-                }
-            }
-
-            return null;
-        }
-
-        public IEnumerator<Input> GetEnumerator() => _list.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
-    }
-
     public class Input
     {
         public string Value;
@@ -62,46 +25,6 @@ namespace Tester
         public Output(string value)
         {
             Value = value;
-        }
-    }
-
-    [MemoryDiagnoser]
-    public class KeyValueBenchmark
-    {
-        [Benchmark]
-        public void ToStringString_KeyValuePair()
-        {
-            const string testString = "test:test";
-            var kv = testString.ToStringString();
-            if (kv.Key != "test") throw new Exception();
-            if (kv.Value != "test") throw new Exception();
-        }
-
-        [Benchmark]
-        public void ToStringString_KeyValuePairSpan()
-        {
-            const string testString = "test:test";
-            var kv = testString.AsSpan().ToStringString_Span();
-            if (kv.Key != "test") throw new Exception();
-            if (kv.Value != "test") throw new Exception();
-        }
-
-        [Benchmark]
-        public void ToStringString_Tuple()
-        {
-            const string testString = "test:test";
-            var kv = testString.ToStringString_Tuple();
-            if (kv.Item1 != "test") throw new Exception();
-            if (kv.Item2 != "test") throw new Exception();
-        }
-
-        [Benchmark]
-        public void ToStringString_TupleSpan()
-        {
-            const string testString = "test:test";
-            var kv = testString.AsSpan().ToStringString_TupleSpan();
-            if (kv.Item1 != "test") throw new Exception();
-            if (kv.Item2 != "test") throw new Exception();
         }
     }
 
