@@ -9,6 +9,7 @@ using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Exporters;
 
 using Tester.Benchmark;
+using System.Runtime.CompilerServices;
 
 namespace Tester
 {
@@ -63,6 +64,27 @@ namespace Tester
         }
     }
 
+    [MemoryDiagnoser]
+    public class AggresiveInlineBenchmark
+    {
+        [Benchmark]
+        public void Sum()
+        {
+            for (int i = 0; i < 100; ++i) Sum(i, i);
+        }
+
+        [Benchmark]
+        public void SumInline()
+        {
+            for (int i = 0; i < 100; ++i) SumInline(i, i);
+        }
+
+        private static int Sum(int a, int b) => a + b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int SumInline(int a, int b) => a + b;
+    }
+
     internal static class Program
     {
         private static void Main(string[] args)
@@ -78,7 +100,8 @@ namespace Tester
               .AddJob(Job.Default.WithRuntime(CoreRuntime.Core31))
               .AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
               .AddExporter(DefaultExporters.Markdown);
-            BenchmarkRunner.Run<DictionaryValuesBenchmark>(customConfig);
+
+            BenchmarkRunner.Run<AggresiveInlineBenchmark>(customConfig);
         }
     }
 }
