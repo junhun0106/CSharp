@@ -12,3 +12,4 @@
 # Pref
 * [.NET 5](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-5/)
 * [.NET 6](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-6/#collections-and-linq)
+* [Performance Tuning in ASP.Net Web Applications - Naveen Vadlamudi](https://www.linkedin.com/pulse/performance-tuning-aspnet-web-applications-naveen-kanth)
