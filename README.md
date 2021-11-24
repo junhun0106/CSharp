@@ -8,3 +8,7 @@
 # DB
 
 * https://github.com/junhun0106/DB
+
+# Pref
+* [.NET 5](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-5/)
+* [.NET 6](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-6/#collections-and-linq)
