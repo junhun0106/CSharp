@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using LinqBenchmark;
 
 namespace LinqBenchmark.Benchmark
 {
@@ -21,7 +17,7 @@ namespace LinqBenchmark.Benchmark
         }
 
         private const int _capacity = 1000;
-        private readonly List<A> _list = new List<A>(_capacity);
+        private readonly List<A> _list = new (_capacity);
 
         [GlobalSetup]
         public void GlobalSetUp()
@@ -41,7 +37,9 @@ namespace LinqBenchmark.Benchmark
         [Benchmark]
         public void WhereSelectCustom()
         {
-            _ = _list.WhereSelect(x => x.@string == "0", x => x.@string);
+            static bool where(A x) => x.@string == "0";
+            static string select(A x) => x.@string;
+            _ = _list.WhereSelect(x => where(x), x => select(x));
         }
     }
 }
