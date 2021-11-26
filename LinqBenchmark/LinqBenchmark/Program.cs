@@ -1,12 +1,31 @@
 ﻿using System;
+using BenchmarkDotNet.Columns;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Environments;
+using BenchmarkDotNet.Exporters;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Validators;
+using LinqBenchmark.Benchmark;
 
 namespace LinqBenchmark
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            //BenchmarkSwitcher.FromAssembly(typeof(SelectToListBenchmark).Assembly).Run(args);
+
+            var customConfig = ManualConfig
+                .Create(DefaultConfig.Instance)
+                .AddValidator(JitOptimizationsValidator.FailOnError)
+                .AddDiagnoser(MemoryDiagnoser.Default)
+                .AddColumn(StatisticColumn.AllStatistics)
+                .AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
+                .AddExporter(DefaultExporters.Markdown);
+
+            BenchmarkRunner.Run<WhereSelectBenchmark>(customConfig);
         }
     }
 }
