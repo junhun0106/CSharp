@@ -13,6 +13,8 @@ using BenchmarkDotNet.Exporters;
 using Tester.Benchmark;
 using System.Runtime.CompilerServices;
 using System.Reflection;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Tester
 {
@@ -91,10 +93,10 @@ namespace Tester
     [MemoryDiagnoser]
     public class SealedAttributeBenchmark
     {
-        [AttributeUsage(AttributeTargets.Class)]
+        [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
         public class UnsealedAttribute : Attribute { }
 
-        [AttributeUsage(AttributeTargets.Class)]
+        [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
         public sealed class SealedAttribute : Attribute { }
 
         [Sealed]
@@ -128,6 +130,56 @@ namespace Tester
         }
     }
 
+    [MemoryDiagnoser]
+    public class ArrayOrderByBenchmark
+    {
+        public class TestClass
+        {
+            public readonly int Index;
+
+            public TestClass(int index)
+            {
+                Index = index;
+            }
+        }
+
+        private class AComparer : IComparer<TestClass>
+        {
+            public int Compare(TestClass x, TestClass y)
+            {
+                return x.Index.CompareTo(y.Index);
+            }
+        }
+
+        private static readonly AComparer g_Comparer = new();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static TestClass[] CreateArray()
+        {
+            const int count = 100;
+            var array = new TestClass[count];
+            for (int index = 0; index < count; ++index)
+            {
+                array[index] = new TestClass(count - index - 1);
+            }
+            return array;
+        }
+
+        [Benchmark]
+        public void OrderBy()
+        {
+            var array = CreateArray();
+            array = array.OrderBy(x => x.Index).ToArray();
+        }
+
+        [Benchmark]
+        public void Sort()
+        {
+            var array = CreateArray();
+            Array.Sort(array, g_Comparer);
+        }
+    }
+
     internal static class Program
     {
         private static void Main(string[] args)
@@ -144,7 +196,7 @@ namespace Tester
               .AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
               .AddExporter(DefaultExporters.Markdown);
 
-            BenchmarkRunner.Run<SealedAttributeBenchmark>(customConfig);
+            BenchmarkRunner.Run<ArrayOrderByBenchmark>(customConfig);
         }
     }
 }
