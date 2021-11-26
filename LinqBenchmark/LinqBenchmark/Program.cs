@@ -14,17 +14,17 @@ namespace LinqBenchmark
     {
         private static void Main(string[] args)
         {
-            //BenchmarkSwitcher.FromAssembly(typeof(SelectToListBenchmark).Assembly).Run(args);
+            BenchmarkSwitcher.FromAssembly(typeof(WhereSelectBenchmark).Assembly).Run(args);
 
-            var customConfig = ManualConfig
-                .Create(DefaultConfig.Instance)
-                .AddValidator(JitOptimizationsValidator.FailOnError)
-                .AddDiagnoser(MemoryDiagnoser.Default)
-                .AddColumn(StatisticColumn.AllStatistics)
-                .AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
-                .AddExporter(DefaultExporters.Markdown);
+            //var customConfig = ManualConfig
+            //    .Create(DefaultConfig.Instance)
+            //    .AddValidator(JitOptimizationsValidator.FailOnError)
+            //    .AddDiagnoser(MemoryDiagnoser.Default)
+            //    .AddColumn(StatisticColumn.AllStatistics)
+            //    .AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
+            //    .AddExporter(DefaultExporters.Markdown);
 
-            BenchmarkRunner.Run<WhereSelectBenchmark>(customConfig);
+            //BenchmarkRunner.Run<WhereSelectBenchmark>(customConfig);
         }
     }
 }
