@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
@@ -9,10 +11,84 @@ using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Validators;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace LocalFunctionBenchmark
 {
-    [MemoryDiagnoser()]
+    /// <summary>
+    /// https://docs.microsoft.com/ko-kr/dotnet/csharp/programming-guide/classes-and-structs/local-functions#heap-allocations
+    /// 로컬 함수 힙 할당 예시 테스트
+    /// </summary>
+    [MemoryDiagnoser]
+    public class MSDNBenchmark
+    {
+        [Benchmark]
+        public async Task Lambda()
+        {
+            await PerformLongRunningWorkLambda("addess", 0, "index");
+        }
+
+        [Benchmark]
+        public async Task LocalFunction()
+        {
+            await PerformLongRunningWork("addess", 0, "index");
+        }
+
+        private async Task<string> PerformLongRunningWorkLambda(string address, int index, string name)
+        {
+            if (string.IsNullOrWhiteSpace(address))
+                throw new ArgumentException(message: "An address is required", paramName: nameof(address));
+            if (index < 0)
+                throw new ArgumentOutOfRangeException(paramName: nameof(index), message: "The index must be non-negative");
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException(message: "You must supply a name", paramName: nameof(name));
+
+            Func<Task<string>> longRunningWorkImplementation = async () =>
+            {
+                var interimResult = await FirstWork(address);
+                var secondResult = await SecondStep(index, name);
+                return $"The results are {interimResult} and {secondResult}. Enjoy.";
+            };
+
+            return await Work(longRunningWorkImplementation);
+        }
+
+        private async Task<string> PerformLongRunningWork(string address, int index, string name)
+        {
+            if (string.IsNullOrWhiteSpace(address))
+                throw new ArgumentException(message: "An address is required", paramName: nameof(address));
+            if (index < 0)
+                throw new ArgumentOutOfRangeException(paramName: nameof(index), message: "The index must be non-negative");
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException(message: "You must supply a name", paramName: nameof(name));
+
+            async Task<string> longRunningWorkImplementation()
+            {
+                var interimResult = await FirstWork(address);
+                var secondResult = await SecondStep(index, name);
+                return $"The results are {interimResult} and {secondResult}. Enjoy.";
+            }
+
+            return await Work(longRunningWorkImplementation);
+        }
+
+        private Task<string> Work(Func<Task<string>> func)
+        {
+            return func();
+        }
+
+        private async Task<int> FirstWork(string address)
+        {
+            return 0;
+        }
+
+        private async Task<int> SecondStep(int index, string name)
+        {
+            return 0;
+        }
+    }
+
+    [MemoryDiagnoser]
     public class DeletgateBenchmark
     {
         private struct A
@@ -107,17 +183,17 @@ namespace LocalFunctionBenchmark
     {
         private static void Main(string[] args)
         {
-            BenchmarkSwitcher.FromAssembly(typeof(DeletgateBenchmark).Assembly).Run(args);
-            
-            //var customConfig = ManualConfig
-            //    .Create(DefaultConfig.Instance)
-            //    .AddValidator(JitOptimizationsValidator.FailOnError)
-            //    .AddDiagnoser(MemoryDiagnoser.Default)
-            //    .AddColumn(StatisticColumn.AllStatistics)
-            //    .AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
-            //    .AddExporter(DefaultExporters.Markdown);
+            //BenchmarkSwitcher.FromAssembly(typeof(DeletgateBenchmark).Assembly).Run(args);
 
-            //BenchmarkRunner.Run<DeletgateBenchmark>(customConfig);
+            var customConfig = ManualConfig
+                .Create(DefaultConfig.Instance)
+                .AddValidator(JitOptimizationsValidator.FailOnError)
+                .AddDiagnoser(MemoryDiagnoser.Default)
+                .AddColumn(StatisticColumn.AllStatistics)
+                .AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
+                .AddExporter(DefaultExporters.Markdown);
+
+            BenchmarkRunner.Run<MSDNBenchmark>(customConfig);
         }
     }
 }
