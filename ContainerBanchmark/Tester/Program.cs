@@ -180,6 +180,54 @@ namespace Tester
         }
     }
 
+    [MemoryDiagnoser]
+    public class CloneBenchmark
+    {
+        private byte[] _src;
+
+        [GlobalSetup]
+        public void GlobalSetUp()
+        {
+            const int length = 4096;
+            _src = new byte[length];
+            foreach (var i in Enumerable.Range(0, length))
+            {
+                _src[i] = (byte)i;
+            }
+        }
+
+        [Benchmark]
+        public Memory<byte> Span()
+        {
+            Span<byte> dest = stackalloc byte[_src.Length];
+            Span<byte> src = _src;
+            src.CopyTo(dest);
+            return dest.ToArray();
+        }
+
+        [Benchmark]
+        public Memory<byte> MemberwiseClone()
+        {
+            return (byte[])_src.Clone();
+        }
+
+        [Benchmark]
+        public unsafe Memory<byte> UnsafeMemoryCopy()
+        {
+            var count = _src.Length;
+            var dest = new byte[count];
+            fixed (byte* srcPointer = &this._src[0])
+            {
+                fixed(byte* destPointer = dest)
+                {
+                    Buffer.MemoryCopy(srcPointer, destPointer, count, count);
+                }
+            }
+
+            return dest;
+        }
+    }
+
     internal static class Program
     {
         private static void Main(string[] args)
@@ -191,12 +239,12 @@ namespace Tester
               .AddValidator(JitOptimizationsValidator.FailOnError)
               .AddDiagnoser(MemoryDiagnoser.Default)
               .AddColumn(StatisticColumn.AllStatistics)
-              .AddJob(Job.Default.WithRuntime(ClrRuntime.Net48))
-              .AddJob(Job.Default.WithRuntime(CoreRuntime.Core31))
+              //.AddJob(Job.Default.WithRuntime(ClrRuntime.Net48))
+              //.AddJob(Job.Default.WithRuntime(CoreRuntime.Core31))
               .AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
               .AddExporter(DefaultExporters.Markdown);
 
-            BenchmarkRunner.Run<ArrayOrderByBenchmark>(customConfig);
+            BenchmarkRunner.Run<CloneBenchmark>(customConfig);
         }
     }
 }
