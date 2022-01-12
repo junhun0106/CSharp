@@ -1,4 +1,6 @@
-﻿namespace DotNetVerify.Etc
+﻿using System.Runtime.CompilerServices;
+
+namespace DotNetVerify.Etc
 {
     [MemoryDiagnoser]
     public class CastingBenchmark
@@ -149,6 +151,107 @@
         private static void StaticCallInternal()
         {
             CA1822.Member += 2;
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class RCS1214Benchmark
+    {
+        // Unnecessary interpolated string
+
+        [Benchmark(Baseline = true)]
+        public void Normal()
+        {
+            for (int i = 0; i < 1_000; ++i)
+                Log("log");
+        }
+
+        [Benchmark]
+        public void UnnecessaryInterpolatedString()
+        {
+            for (int i = 0; i < 1_000; ++i)
+                Log($"log");
+        }
+
+
+        private void Log(string message)
+        {
+            //
+        }
+    }
+
+    [MemoryDiagnoser]
+    public class RecordBenchmakr
+    {
+        record RecordA : IEquatable<StructB>
+        {
+            public int A;
+            public string B;
+
+            public bool Equals(StructB other) => A == other.A && B == other.B;
+        }
+
+        struct StructA
+        {
+            public int A;
+            public string B;
+        }
+
+        struct StructB : IEquatable<StructB>
+        {
+            public int A;
+            public string B;
+
+            public bool Equals(StructB other) => A == other.A && B == other.B;
+        }
+
+        private readonly List<RecordA> _records = new List<RecordA> {
+            new RecordA { A = 1, B = "1" },
+            new RecordA { A = 2, B = "2" },
+            new RecordA { A = 3, B = "3" },
+            new RecordA { A = 4, B = "4" },
+        };
+        private readonly List<StructA> _structs = new List<StructA>
+        {
+            new StructA { A = 1, B = "1" },
+            new StructA { A = 2, B = "2" },
+            new StructA { A = 3, B = "3" },
+            new StructA { A = 4, B = "4" },
+        };
+
+        private readonly List<StructB> _structBs = new List<StructB>
+        {
+            new StructB { A = 1, B = "1" },
+            new StructB { A = 2, B = "2" },
+            new StructB { A = 3, B = "3" },
+            new StructB { A = 4, B = "4" },
+        };
+
+        [Benchmark]
+        public void Record()
+        {
+            if (!_records.Contains(new RecordA { A = 1, B = "1" }))
+            {
+                throw new Exception();
+            }
+        }
+
+        [Benchmark]
+        public void Struct()
+        {
+            if (!_structs.Contains(new StructA { A = 1, B = "1" }))
+            {
+                throw new Exception();
+            }
+        }
+
+        [Benchmark]
+        public void StructOverrideEquals()
+        {
+            if (!_structBs.Contains(new StructB { A = 1, B = "1" }))
+            {
+                throw new Exception();
+            }
         }
     }
 }
