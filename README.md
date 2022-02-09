@@ -4,6 +4,7 @@
 * https://referencesource.microsoft.com/
 * https://docs.microsoft.com/ko-kr/dotnet/csharp/
 * https://docs.microsoft.com/ko-kr/dotnet/standard/design-guidelines
+* https://github.com/dotnet/roslyn/blob/main/docs/Language%20Feature%20Status.md#c-100
 
 # DB
 
